@@ -1,0 +1,6 @@
+{
+  "name": "MarketSpec - Product & Material Price Intelligence",
+  "description": "AI-powered market price and specification research engine for physical products, materials, and industrial items using grounded web search.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
