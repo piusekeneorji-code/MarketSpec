@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { Search, X, Sparkles, CornerDownLeft } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Search, X, Sparkles, CornerDownLeft, AlertCircle } from 'lucide-react';
+import { MAX_QUERY_LENGTH } from '../services/api';
 
 interface SearchHeroProps {
   initialQuery?: string;
@@ -24,21 +25,57 @@ export const SearchHero: React.FC<SearchHeroProps> = ({
   compact = false
 }) => {
   const [query, setQuery] = useState(initialQuery);
+  const [validationError, setValidationError] = useState<string | null>(null);
+  const isSubmittingRef = useRef(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (query.trim() && !isLoading) {
-      onSearch(query.trim());
+  useEffect(() => {
+    setQuery(initialQuery);
+  }, [initialQuery]);
+
+  const handleSubmit = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    setValidationError(null);
+
+    // Prevent duplicate submission triggers
+    if (isLoading || isSubmittingRef.current) {
+      return;
     }
+
+    const trimmed = query.trim().replace(/\s+/g, ' ');
+
+    if (!trimmed) {
+      setValidationError('Please enter a product or material name to search.');
+      return;
+    }
+
+    if (trimmed.length > MAX_QUERY_LENGTH) {
+      setValidationError(`Query exceeds maximum limit of ${MAX_QUERY_LENGTH} characters (currently ${trimmed.length}).`);
+      return;
+    }
+
+    isSubmittingRef.current = true;
+    onSearch(trimmed);
+
+    // Release submission lock after brief tick
+    setTimeout(() => {
+      isSubmittingRef.current = false;
+    }, 400);
   };
 
   const handleChipClick = (suggestion: string) => {
+    if (isLoading || isSubmittingRef.current) return;
+    setValidationError(null);
     setQuery(suggestion);
+    isSubmittingRef.current = true;
     onSearch(suggestion);
+    setTimeout(() => {
+      isSubmittingRef.current = false;
+    }, 400);
   };
 
   const handleClear = () => {
     setQuery('');
+    setValidationError(null);
   };
 
   return (
@@ -62,7 +99,13 @@ export const SearchHero: React.FC<SearchHeroProps> = ({
 
         {/* Search Box Form */}
         <form onSubmit={handleSubmit} className="mx-auto max-w-3xl text-left">
-          <div className="relative rounded-2xl border-2 border-slate-300 bg-white p-1.5 shadow-lg shadow-slate-200/50 transition focus-within:border-blue-600 focus-within:ring-4 focus-within:ring-blue-100">
+          <div
+            className={`relative rounded-2xl border-2 bg-white p-1.5 shadow-lg shadow-slate-200/50 transition ${
+              validationError
+                ? 'border-red-400 focus-within:border-red-500 focus-within:ring-4 focus-within:ring-red-100'
+                : 'border-slate-300 focus-within:border-blue-600 focus-within:ring-4 focus-within:ring-blue-100'
+            }`}
+          >
             <div className="flex items-center">
               <div className="pl-3 text-slate-400">
                 <Search className="h-5 w-5 sm:h-6 sm:w-6" />
@@ -70,7 +113,11 @@ export const SearchHero: React.FC<SearchHeroProps> = ({
               <input
                 type="text"
                 value={query}
-                onChange={(e) => setQuery(e.target.value)}
+                maxLength={MAX_QUERY_LENGTH}
+                onChange={(e) => {
+                  setQuery(e.target.value);
+                  if (validationError) setValidationError(null);
+                }}
                 disabled={isLoading}
                 placeholder="Search an item (e.g., 12mm plywood, cement board, Samsung A55)..."
                 aria-label="Product or material search query"
@@ -98,10 +145,27 @@ export const SearchHero: React.FC<SearchHeroProps> = ({
               </button>
             </div>
           </div>
+
+          {/* Validation Notice & Character Count */}
+          <div className="mt-2 flex items-center justify-between px-2 text-xs">
+            {validationError ? (
+              <span className="flex items-center gap-1 text-red-600 font-medium">
+                <AlertCircle className="h-3.5 w-3.5" />
+                {validationError}
+              </span>
+            ) : (
+              <span className="text-slate-400">Max {MAX_QUERY_LENGTH} characters &bull; Sanitized text search</span>
+            )}
+            {query.length > 120 && (
+              <span className={`text-[11px] ${query.length >= MAX_QUERY_LENGTH ? 'text-red-500 font-bold' : 'text-slate-400'}`}>
+                {query.length} / {MAX_QUERY_LENGTH}
+              </span>
+            )}
+          </div>
         </form>
 
         {/* Suggestion Chips */}
-        <div className="mt-4 flex flex-wrap items-center justify-center gap-2 pt-1 text-xs sm:text-sm">
+        <div className="mt-3 flex flex-wrap items-center justify-center gap-2 pt-1 text-xs sm:text-sm">
           <span className="font-medium text-slate-500">Try searching:</span>
           {EXAMPLE_SUGGESTIONS.map((item) => (
             <button

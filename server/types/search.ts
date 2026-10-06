@@ -1,3 +1,6 @@
+import { ProductQueryUnderstanding } from './queryUnderstanding';
+import { ProductResearchReport } from './research';
+
 export type ConfidenceLevel = 'HIGH' | 'MEDIUM' | 'LOW';
 
 export interface SpecificationItem {
@@ -15,7 +18,7 @@ export interface SourcePriceItem {
   unitOfMeasure: string;
   url: string;
   observedDate?: string;
-  sourceType: 'distributor' | 'retail' | 'manufacturer' | 'marketplace';
+  sourceType: 'distributor' | 'retail' | 'manufacturer' | 'marketplace' | 'specialty';
 }
 
 export interface EstimatedPriceData {
@@ -25,44 +28,6 @@ export interface EstimatedPriceData {
   currency: string;
   unitOfMeasure: string;
   isEstimatedNotice: string;
-}
-
-export interface ProductQueryUnderstanding {
-  name: string;
-  category: string;
-  description: string;
-  brand: string | null;
-  model: string | null;
-  material: string | null;
-  specifications: string[];
-  possible_variants: string[];
-  search_queries: string[];
-  confidence: number;
-  uncertainties: string[];
-}
-
-export interface NormalizedProductSourceResult {
-  source: string;
-  title: string;
-  url: string;
-  seller: string | null;
-  brand: string | null;
-  product: string;
-  price: number | null;
-  currency: string | null;
-  availability: string | null;
-  specifications: string[];
-  retrievedAt: string;
-}
-
-export interface ProductResearchReport {
-  query: string;
-  productName: string;
-  searchQueriesUsed: string[];
-  totalResultsFound: number;
-  relevantResults: NormalizedProductSourceResult[];
-  summary: string;
-  retrievedAt: string;
 }
 
 export interface MarketResearchResult {
@@ -80,4 +45,16 @@ export interface MarketResearchResult {
   understanding?: ProductQueryUnderstanding;
   researchReport?: ProductResearchReport;
   timestamp: string;
+}
+
+export interface SearchApiRequest {
+  query: string;
+  currency?: string;
+}
+
+export interface SearchApiResponse {
+  success: boolean;
+  data?: MarketResearchResult;
+  error?: string;
+  details?: string;
 }

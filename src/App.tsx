@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Navbar } from './components/Navbar';
 import { SearchHero } from './components/SearchHero';
 import { LoadingState } from './components/LoadingState';
@@ -12,7 +12,7 @@ import { EmptyState } from './components/EmptyState';
 import { ResultView } from './components/ResultView';
 import { MethodologyModal } from './components/MethodologyModal';
 import { MarketResearchResult } from './types/market';
-import { mockSearchProduct } from './services/mockData';
+import { executeSearchProduct, ApiError } from './services/api';
 
 export default function App() {
   const [currentQuery, setCurrentQuery] = useState<string>('');
@@ -21,25 +21,44 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<MarketResearchResult | null>(null);
   const [isMethodologyOpen, setIsMethodologyOpen] = useState<boolean>(false);
+  
+  // Guard against accidental rapid duplicate submissions
+  const activeSubmissionRef = useRef<string | null>(null);
 
   const handleSearch = async (queryText: string) => {
-    if (!queryText.trim()) return;
+    const trimmed = queryText.trim().replace(/\s+/g, ' ');
+    if (!trimmed) {
+      setError('Please enter a valid product or material name.');
+      return;
+    }
 
-    setCurrentQuery(queryText);
-    setActiveQuery(queryText);
+    // Prevent duplicate submission of identical query while active
+    if (isLoading && activeSubmissionRef.current === trimmed) {
+      return;
+    }
+
+    activeSubmissionRef.current = trimmed;
+    setCurrentQuery(trimmed);
+    setActiveQuery(trimmed);
     setIsLoading(true);
     setError(null);
 
     try {
-      // Calls the isolated mock service for this frontend foundation phase
-      const data = await mockSearchProduct(queryText);
+      // Dispatches to secure server-side endpoint /api/search
+      const data = await executeSearchProduct(trimmed);
       setResult(data);
+      setError(null);
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Failed to retrieve market research data.';
+      // Ignore cancelled requests triggered by new query
+      if (err instanceof ApiError && err.statusCode === 0) {
+        return;
+      }
+      const msg = err instanceof Error ? err.message : 'An error occurred while connecting to the server.';
       setError(msg);
       setResult(null);
     } finally {
       setIsLoading(false);
+      activeSubmissionRef.current = null;
     }
   };
 
@@ -49,6 +68,7 @@ export default function App() {
     setResult(null);
     setError(null);
     setIsLoading(false);
+    activeSubmissionRef.current = null;
   };
 
   const handleRetry = () => {

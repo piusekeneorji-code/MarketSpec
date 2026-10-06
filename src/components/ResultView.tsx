@@ -11,7 +11,14 @@ import {
   ArrowLeft,
   Building2,
   Tag,
-  TrendingUp
+  TrendingUp,
+  Brain,
+  Search,
+  Sparkles,
+  HelpCircle,
+  Globe,
+  DollarSign,
+  PackageCheck,
 } from 'lucide-react';
 
 interface ResultViewProps {
@@ -23,11 +30,17 @@ export const ResultView: React.FC<ResultViewProps> = ({ data, onReset }) => {
   const [copied, setCopied] = useState(false);
 
   const handleCopySummary = async () => {
-    const text = `Market Price Research: ${data.productName}
-Typical Price: ${data.estimatedPrice.currency} ${data.estimatedPrice.typical} (${data.estimatedPrice.unitOfMeasure})
-Range: ${data.estimatedPrice.currency} ${data.estimatedPrice.min} - ${data.estimatedPrice.max}
+    const text = `Market Research: ${data.productName}
+Category: ${data.category}
 Confidence: ${data.confidenceLevel} (${data.confidenceReason})
-Sources: ${data.sourcePrices.length} verified listings observed.`;
+Specifications: ${data.specifications.map((s) => `${s.key}: ${s.value}`).join(', ')}
+${
+  data.researchReport
+    ? `Sources Found (${data.researchReport.relevantResults.length}):\n${data.researchReport.relevantResults
+        .map((r) => `- ${r.source}: ${r.title} | ${r.price ? `${r.currency} ${r.price}` : 'Price on request'} (${r.url})`)
+        .join('\n')}`
+    : ''
+}`;
 
     try {
       await navigator.clipboard.writeText(text);
@@ -42,7 +55,7 @@ Sources: ${data.sourcePrices.length} verified listings observed.`;
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: cur || 'USD',
-      maximumFractionDigits: 2
+      maximumFractionDigits: 2,
     }).format(val);
   };
 
@@ -63,11 +76,14 @@ Sources: ${data.sourcePrices.length} verified listings observed.`;
       default:
         return (
           <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-700 border border-rose-200">
-            <AlertTriangle className="h-3.5 w-3.5" /> Low Confidence / High Spread
+            <AlertTriangle className="h-3.5 w-3.5" /> Low Confidence / Ambiguous
           </span>
         );
     }
   };
+
+  const hasLivePrices = data.sourcePrices && data.sourcePrices.length > 0 && data.estimatedPrice.typical > 0;
+  const researchResults = data.researchReport?.relevantResults || [];
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6 space-y-6">
@@ -115,67 +131,191 @@ Sources: ${data.sourcePrices.length} verified listings observed.`;
         <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
           {data.productName}
         </h2>
-        <p className="text-sm text-slate-600 leading-relaxed max-w-4xl">
-          {data.description}
-        </p>
+        <p className="text-sm text-slate-600 leading-relaxed max-w-4xl">{data.description}</p>
       </div>
 
-      {/* Main Pricing Estimate Card */}
-      <div className="rounded-2xl border-2 border-slate-200 bg-gradient-to-br from-slate-900 to-slate-800 p-6 text-white shadow-md sm:p-8">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-          {/* Estimated Typical Price */}
-          <div>
-            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
-              <TrendingUp className="h-4 w-4 text-emerald-400" />
-              <span>Estimated Market Price</span>
+      {/* AI Query Understanding Card */}
+      {data.understanding && (
+        <div className="rounded-2xl border-2 border-blue-200 bg-gradient-to-br from-blue-50/60 to-indigo-50/40 p-6 shadow-xs space-y-5">
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 text-white shadow-xs">
+                <Brain className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-slate-900">Query Understanding & Search Strategy</h3>
+                <p className="text-xs text-slate-500">
+                  Entity extraction and query formulation driving the web research layer
+                </p>
+              </div>
             </div>
-            <div className="mt-2 flex items-baseline gap-2">
-              <span className="text-4xl sm:text-5xl font-black tracking-tight text-white">
-                {formatPrice(data.estimatedPrice.typical, data.estimatedPrice.currency)}
-              </span>
-              <span className="text-sm sm:text-base font-medium text-slate-300">
-                {data.estimatedPrice.unitOfMeasure}
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-medium text-slate-600">Model Precision:</span>
+              <span className="rounded-md bg-blue-100 px-2 py-0.5 text-xs font-bold text-blue-800">
+                {Math.round(data.understanding.confidence * 100)}%
               </span>
             </div>
-            <p className="mt-1 text-xs text-slate-400">
-              Typical median across observed distributor & retail pricing
-            </p>
           </div>
 
-          {/* Price Range breakdown */}
-          <div className="rounded-xl bg-white/10 p-4 backdrop-blur-xs min-w-[260px] border border-white/10">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-300">
-              Observed Price Range
-            </span>
-            <div className="mt-2 flex items-center justify-between text-base font-bold text-white">
-              <span>{formatPrice(data.estimatedPrice.min, data.estimatedPrice.currency)}</span>
-              <span className="text-xs font-normal text-slate-400">to</span>
-              <span>{formatPrice(data.estimatedPrice.max, data.estimatedPrice.currency)}</span>
+          {/* Quick attribute tags */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="rounded-xl bg-white p-3 border border-blue-100 shadow-2xs">
+              <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">Material</span>
+              <span className="text-xs font-bold text-slate-800 mt-0.5 block truncate">
+                {data.understanding.material || 'Not specified'}
+              </span>
             </div>
-            {/* Visual range meter */}
-            <div className="mt-3 relative h-2 w-full rounded-full bg-slate-700 overflow-hidden">
+            <div className="rounded-xl bg-white p-3 border border-blue-100 shadow-2xs">
+              <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">Brand</span>
+              <span className="text-xs font-bold text-slate-800 mt-0.5 block truncate">
+                {data.understanding.brand || 'Unspecified / Generic'}
+              </span>
+            </div>
+            <div className="rounded-xl bg-white p-3 border border-blue-100 shadow-2xs">
+              <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">Model / Series</span>
+              <span className="text-xs font-bold text-slate-800 mt-0.5 block truncate">
+                {data.understanding.model || 'Standard Grade'}
+              </span>
+            </div>
+            <div className="rounded-xl bg-white p-3 border border-blue-100 shadow-2xs">
+              <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">Preserved Specs</span>
+              <span className="text-xs font-bold text-slate-800 mt-0.5 block truncate">
+                {data.understanding.specifications.length} detected
+              </span>
+            </div>
+          </div>
+
+          {/* Search Queries Used */}
+          <div className="rounded-xl bg-white p-4 border border-blue-100 shadow-2xs space-y-2.5">
+            <div className="flex items-center gap-2 text-xs font-bold text-slate-800">
+              <Search className="h-4 w-4 text-blue-600" />
+              <span>Targeted Web Queries Dispatched:</span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {data.understanding.search_queries.map((q, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-center gap-2 rounded-lg bg-slate-50 border border-slate-200 px-3 py-2 text-xs font-mono text-slate-700"
+                >
+                  <Sparkles className="h-3.5 w-3.5 text-blue-500 shrink-0" />
+                  <span className="truncate">{q}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Web Research Layer Results */}
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+              <Globe className="h-5 w-5" />
+            </div>
+            <div>
+              <h3 className="text-base font-bold text-slate-900">Live Web Research & Source Extraction</h3>
+              <p className="text-xs text-slate-500">
+                Filtered product pages, supplier catalogs, and listed prices with source attribution
+              </p>
+            </div>
+          </div>
+          <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700 border border-slate-200">
+            {researchResults.length} relevant sources extracted
+          </span>
+        </div>
+
+        {data.researchReport?.summary && (
+          <div className="rounded-xl bg-slate-50 border border-slate-200 p-3.5 text-xs text-slate-700 leading-relaxed">
+            <strong className="font-semibold text-slate-900">Research Summary: </strong>
+            {data.researchReport.summary}
+          </div>
+        )}
+
+        {/* List of Normalized Product Sources */}
+        {researchResults.length > 0 ? (
+          <div className="divide-y divide-slate-100">
+            {researchResults.map((src, idx) => (
               <div
-                className="absolute left-0 top-0 h-full rounded-full bg-emerald-400"
-                style={{
-                  width: '100%'
-                }}
-              />
-            </div>
-            <div className="mt-2 flex justify-between text-[11px] text-slate-400">
-              <span>Min Observed</span>
-              <span>Max Observed</span>
-            </div>
-          </div>
-        </div>
+                key={idx}
+                className="py-4 hover:bg-slate-50/70 rounded-xl px-3 transition space-y-2.5"
+              >
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="space-y-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-xs font-bold text-slate-900">{src.source}</span>
+                      {src.seller && (
+                        <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-600 border border-slate-200">
+                          Seller: {src.seller}
+                        </span>
+                      )}
+                      {src.brand && (
+                        <span className="rounded bg-blue-50 px-1.5 py-0.5 text-[10px] font-semibold text-blue-700 border border-blue-200">
+                          Brand: {src.brand}
+                        </span>
+                      )}
+                      {src.availability && (
+                        <span className="inline-flex items-center gap-1 rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700 border border-emerald-200">
+                          <PackageCheck className="h-3 w-3" />
+                          {src.availability}
+                        </span>
+                      )}
+                    </div>
+                    <h4 className="text-sm font-semibold text-slate-800">{src.title}</h4>
+                  </div>
 
-        {/* Mandatory Transparency Notice */}
-        <div className="mt-6 flex items-start gap-2.5 rounded-xl bg-amber-500/10 border border-amber-400/20 p-3 text-xs text-amber-200">
-          <AlertTriangle className="h-4 w-4 text-amber-400 shrink-0 mt-0.5" />
-          <p className="leading-relaxed">
-            <strong className="font-semibold text-amber-300">Market Estimation Notice: </strong>
-            {data.estimatedPrice.isEstimatedNotice}
-          </p>
-        </div>
+                  <div className="flex items-center justify-between sm:justify-end gap-4 shrink-0">
+                    <div className="text-left sm:text-right">
+                      {src.price !== null ? (
+                        <div>
+                          <span className="text-base font-bold text-emerald-700">
+                            {formatPrice(src.price, src.currency || 'USD')}
+                          </span>
+                          <span className="text-[11px] text-slate-500 block">Listed Price</span>
+                        </div>
+                      ) : (
+                        <div>
+                          <span className="text-xs font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
+                            Price on Request
+                          </span>
+                          <span className="text-[11px] text-slate-400 block mt-0.5">Catalog Listing</span>
+                        </div>
+                      )}
+                    </div>
+
+                    <a
+                      href={src.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-blue-600 hover:bg-blue-50 hover:border-blue-300 transition shrink-0"
+                    >
+                      <span>Visit Source</span>
+                      <ExternalLink className="h-3 w-3" />
+                    </a>
+                  </div>
+                </div>
+
+                {/* Extracted specifications from source page */}
+                {src.specifications && src.specifications.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 pt-1">
+                    {src.specifications.map((spec, sIdx) => (
+                      <span
+                        key={sIdx}
+                        className="rounded border border-slate-200 bg-white px-2 py-0.5 text-[11px] font-medium text-slate-600"
+                      >
+                        {spec}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-xl border border-dashed border-slate-200 p-8 text-center text-xs text-slate-500">
+            No live supplier listings could be extracted for this query at this moment.
+          </div>
+        )}
       </div>
 
       {/* Grid: Specifications & Variants */}
@@ -186,12 +326,12 @@ Sources: ${data.sourcePrices.length} verified listings observed.`;
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
               <Layers className="h-4 w-4" />
             </div>
-            <h3 className="text-base font-bold text-slate-900">Technical Specifications</h3>
+            <h3 className="text-base font-bold text-slate-900">Preserved Technical Specifications</h3>
           </div>
 
           <div className="divide-y divide-slate-100 text-xs sm:text-sm">
-            {data.specifications.map((spec) => (
-              <div key={spec.key} className="flex justify-between py-2.5 gap-4">
+            {data.specifications.map((spec, idx) => (
+              <div key={idx} className="flex justify-between py-2.5 gap-4">
                 <span className="font-medium text-slate-500">{spec.key}</span>
                 <span className="font-semibold text-slate-900 text-right">{spec.value}</span>
               </div>
@@ -206,13 +346,13 @@ Sources: ${data.sourcePrices.length} verified listings observed.`;
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
                 <Tag className="h-4 w-4" />
               </div>
-              <h3 className="text-base font-bold text-slate-900">Brands & Common Variants</h3>
+              <h3 className="text-base font-bold text-slate-900">Possible Variants & Grades</h3>
             </div>
 
             <div className="flex flex-wrap gap-2">
-              {data.brandsOrVariants.map((item) => (
+              {data.brandsOrVariants.map((item, idx) => (
                 <span
-                  key={item}
+                  key={idx}
                   className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-700"
                 >
                   {item}
@@ -225,76 +365,18 @@ Sources: ${data.sourcePrices.length} verified listings observed.`;
           <div className="mt-6 rounded-xl bg-slate-50 border border-slate-200 p-4 text-xs">
             <div className="flex items-center gap-2 text-slate-700 font-semibold mb-1">
               <ShieldCheck className="h-4 w-4 text-blue-600" />
-              <span>Confidence Rationale:</span>
+              <span>Confidence Assessment:</span>
             </div>
             <p className="text-slate-600 leading-relaxed">{data.confidenceReason}</p>
           </div>
         </div>
       </div>
 
-      {/* Observed Source Quotes & Links */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4 border-b border-slate-100 pb-3">
-          <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
-              <Building2 className="h-4 w-4" />
-            </div>
-            <div>
-              <h3 className="text-base font-bold text-slate-900">Observed Source Quotes</h3>
-              <p className="text-xs text-slate-500">
-                Live distributor and supplier data points used to compute this estimate
-              </p>
-            </div>
-          </div>
-          <span className="text-xs font-medium text-slate-500">
-            {data.sourcePrices.length} sources referenced
-          </span>
-        </div>
-
-        <div className="divide-y divide-slate-100">
-          {data.sourcePrices.map((src) => (
-            <div
-              key={src.id}
-              className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-3.5 hover:bg-slate-50/80 rounded-xl px-2.5 transition"
-            >
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold text-slate-900">{src.sourceName}</span>
-                  <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-600 uppercase border border-slate-200">
-                    {src.sourceType}
-                  </span>
-                </div>
-                <p className="text-xs text-slate-600">{src.title}</p>
-              </div>
-
-              <div className="flex items-center justify-between sm:justify-end gap-4 shrink-0">
-                <div className="text-left sm:text-right">
-                  <span className="text-sm font-bold text-slate-900">
-                    {formatPrice(src.price, src.currency)}
-                  </span>
-                  <span className="text-xs text-slate-500 block">{src.unitOfMeasure}</span>
-                </div>
-
-                <a
-                  href={src.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-blue-600 hover:bg-blue-50 hover:border-blue-300 transition"
-                >
-                  <span>View Source</span>
-                  <ExternalLink className="h-3 w-3" />
-                </a>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
       {/* Assumptions & Uncertainty */}
       <div className="rounded-2xl border border-slate-200 bg-amber-50/40 p-6">
         <h3 className="text-sm font-bold text-amber-950 flex items-center gap-2 mb-3">
-          <Info className="h-4 w-4 text-amber-700" />
-          <span>Key Assumptions & Price Volatility Factors</span>
+          <HelpCircle className="h-4 w-4 text-amber-700" />
+          <span>Acknowledged Uncertainties & Missing Parameters</span>
         </h3>
         <ul className="space-y-2 text-xs text-amber-900 leading-relaxed list-disc list-inside">
           {data.assumptionsAndUncertainties.map((item, idx) => (
