@@ -17,21 +17,23 @@ export const ErrorState: React.FC<ErrorStateProps> = ({
 }) => {
   return (
     <div className="mx-auto max-w-2xl px-4 py-12 text-center sm:px-6">
-      <div className="rounded-2xl border border-red-200 bg-white p-6 shadow-sm sm:p-8">
-        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-50 text-red-600">
-          <AlertCircle className="h-6 w-6" />
+      <div className="rounded-3xl border border-red-200 bg-white p-8 sm:p-10 shadow-soft-lg">
+        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-red-50 text-red-600">
+          <AlertCircle className="h-7 w-7" />
         </div>
 
-        <h3 className="text-lg font-bold text-slate-900">Research Request Failed</h3>
-        <p className="mt-2 text-sm text-slate-600 leading-relaxed">
-          {message || 'An unexpected error occurred while gathering market data.'}
+        <h3 className="font-anton text-2xl tracking-wide text-slate-900 uppercase">
+          RESEARCH REQUEST INTERRUPTED
+        </h3>
+        <p className="mt-2 text-sm text-slate-600 leading-relaxed max-w-md mx-auto">
+          {message || 'An unexpected issue occurred while querying supplier data.'}
         </p>
 
-        <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
           <button
             type="button"
             onClick={onRetry}
-            className="flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-xs sm:text-sm font-semibold text-white shadow-xs hover:bg-blue-700 transition focus:outline-none"
+            className="flex items-center gap-2 rounded-2xl bg-orange-600 px-6 py-3 text-xs sm:text-sm font-bold uppercase tracking-wider text-white shadow-md shadow-orange-500/25 transition-all hover:bg-orange-700 hover:scale-[1.02] active:scale-[0.98]"
           >
             <RefreshCw className="h-4 w-4" />
             <span>Try Again</span>
@@ -40,17 +42,16 @@ export const ErrorState: React.FC<ErrorStateProps> = ({
           <button
             type="button"
             onClick={onReset}
-            className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs sm:text-sm font-medium text-slate-700 hover:bg-slate-50 transition focus:outline-none"
+            className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-5 py-3 text-xs sm:text-sm font-semibold text-slate-700 hover:bg-slate-100 transition"
           >
             <ArrowLeft className="h-4 w-4" />
-            <span>Return to Search</span>
+            <span>New Search</span>
           </button>
         </div>
 
-        {/* Suggested alternatives */}
         <div className="mt-8 border-t border-slate-100 pt-6 text-left">
-          <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-            Or try one of these standard queries:
+          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">
+            Or try one of these standard items:
           </h4>
           <div className="mt-3 flex flex-wrap gap-2">
             {EXAMPLE_SUGGESTIONS.slice(0, 4).map((s) => (
@@ -58,7 +59,7 @@ export const ErrorState: React.FC<ErrorStateProps> = ({
                 key={s}
                 type="button"
                 onClick={() => onSelectSuggestion(s)}
-                className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 transition"
+                className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-700 hover:border-orange-300 hover:bg-orange-50 hover:text-orange-800 transition"
               >
                 {s}
               </button>

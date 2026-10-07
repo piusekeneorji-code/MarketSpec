@@ -1,5 +1,6 @@
 import React from 'react';
-import { Layers, ShieldAlert, FileText, ArrowRight, Wrench, HardHat, Smartphone } from 'lucide-react';
+import { Layers, ShieldCheck, FileText, ArrowUpRight, Wrench, HardHat, Smartphone, Globe } from 'lucide-react';
+import { Card3D } from './Card3D';
 
 interface EmptyStateProps {
   onSelectQuery: (query: string) => void;
@@ -8,103 +9,122 @@ interface EmptyStateProps {
 export const EmptyState: React.FC<EmptyStateProps> = ({ onSelectQuery }) => {
   const categoryHighlights = [
     {
-      category: 'Construction Materials',
-      icon: Wrench,
-      description: 'Dimensional lumber, cementitious boards, fasteners, and dry-lining substrates.',
+      category: 'CONSTRUCTION MATERIALS',
+      badge: 'BUILDING',
+      accent: 'amber',
+      description: 'Dimensional timber, cement backer units, structural plywood & insulation.',
       samples: ['12mm plywood', 'cement board']
     },
     {
-      category: 'Industrial & Safety Hardware',
-      icon: HardHat,
-      description: 'Piping schedules, PPE compliance gear, ANSI/OSHA rated hardware.',
+      category: 'INDUSTRIAL HARDWARE',
+      badge: 'SAFETY & METALS',
+      accent: 'blue',
+      description: 'Piping schedules, ANSI/OSHA climbing hard hats, raw alloys & fittings.',
       samples: ['industrial safety helmet', 'stainless steel pipe 2 inch']
     },
     {
-      category: 'Commercial Items & Devices',
-      icon: Smartphone,
-      description: 'Ergonomic task seating, electronics, and commercial equipment.',
+      category: 'CONSUMER & COMMERCIAL',
+      badge: 'DEVICES & SEATING',
+      accent: 'neutral',
+      description: 'Ergonomic task seating, mobile electronics, and commercial equipment.',
       samples: ['office chair', 'Samsung A55']
     }
   ];
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
-      {/* 3 Core Value Pillars */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600 mb-3">
-            <Layers className="h-5 w-5" />
-          </div>
-          <h3 className="text-sm font-semibold text-slate-900">Empirical Price Ranges</h3>
-          <p className="mt-1 text-xs text-slate-500 leading-relaxed">
-            Synthesizes current retail, wholesale, and distributor price points into a typical market median and range.
+    <div id="categories" className="mx-auto max-w-5xl px-4 py-8 sm:px-6 space-y-12">
+      {/* 3 Core Value Pillars in 3D Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card3D glowColor="blue" className="border border-white/10 bg-[#0d111d]/90 p-6 backdrop-blur-xl">
+          <div className="font-anton text-3xl text-blue-500/80 mb-2">01</div>
+          <h3 className="font-playfair text-xl font-bold text-white mb-2">
+            Empirical Price Ranges
+          </h3>
+          <p className="font-space text-xs text-slate-400 leading-relaxed">
+            Synthesizes current retail and distributor quotes into typical medians and statistical min–max ranges.
           </p>
-        </div>
+        </Card3D>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 mb-3">
-            <FileText className="h-5 w-5" />
-          </div>
-          <h3 className="text-sm font-semibold text-slate-900">Technical Specifications</h3>
-          <p className="mt-1 text-xs text-slate-500 leading-relaxed">
-            Extracts dimensions, ASTM/ANSI material grades, core construction, and relevant manufacturer variations.
+        <Card3D glowColor="amber" className="border border-white/10 bg-[#0d111d]/90 p-6 backdrop-blur-xl">
+          <div className="font-anton text-3xl text-amber-500/80 mb-2">02</div>
+          <h3 className="font-playfair text-xl font-bold text-white mb-2">
+            Preserved Specifications
+          </h3>
+          <p className="font-space text-xs text-slate-400 leading-relaxed">
+            Isolates exact dimensions, ASTM/ANSI material grades, and tolerances without inventing false attributes.
           </p>
-        </div>
+        </Card3D>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 mb-3">
-            <ShieldAlert className="h-5 w-5" />
-          </div>
-          <h3 className="text-sm font-semibold text-slate-900">Zero Unsupported Numbers</h3>
-          <p className="mt-1 text-xs text-slate-500 leading-relaxed">
-            All prices link to verifiable sources with confidence scores and explicit notes on shipping, volume, or grade.
+        <Card3D glowColor="neutral" className="border border-white/10 bg-[#0d111d]/90 p-6 backdrop-blur-xl">
+          <div className="font-anton text-3xl text-indigo-400/80 mb-2">03</div>
+          <h3 className="font-playfair text-xl font-bold text-white mb-2">
+            Strict Source Grounding
+          </h3>
+          <p className="font-space text-xs text-slate-400 leading-relaxed">
+            Every quote links directly to a verifiable supplier URL with confidence scores and disclosure of assumptions.
           </p>
-        </div>
+        </Card3D>
       </div>
 
-      {/* Suggested category panels */}
-      <div className="mt-8">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500">
-            Common Procurement Categories
-          </h2>
-          <span className="text-xs text-slate-400">Click any item to run instant research</span>
+      {/* Suggested 3D Showcase Panels */}
+      <div className="space-y-6">
+        <div className="flex items-center justify-between border-b border-white/10 pb-4">
+          <div>
+            <h2 className="font-anton text-2xl uppercase tracking-wider text-white">
+              PROCUREMENT DOMAINS
+            </h2>
+            <p className="font-playfair text-xs italic text-slate-400">
+              Select any standardized query to run instant 3D market research
+            </p>
+          </div>
+          <span className="font-space text-xs text-blue-400 font-bold uppercase tracking-widest hidden sm:inline">
+            LIVE RESEARCH
+          </span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {categoryHighlights.map((cat) => {
-            const Icon = cat.icon;
-            return (
-              <div
-                key={cat.category}
-                className="flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-5 shadow-xs hover:border-blue-200 transition"
-              >
-                <div>
-                  <div className="flex items-center gap-2.5 mb-2">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-slate-700">
-                      <Icon className="h-4 w-4" />
-                    </div>
-                    <h3 className="text-sm font-semibold text-slate-900">{cat.category}</h3>
-                  </div>
-                  <p className="text-xs text-slate-500 mb-4">{cat.description}</p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+          {categoryHighlights.map((cat) => (
+            <Card3D
+              key={cat.category}
+              glowColor={cat.accent as any}
+              className={`flex flex-col justify-between border border-white/10 p-6 backdrop-blur-xl ${
+                cat.accent === 'amber'
+                  ? 'bg-gradient-to-b from-[#18120d] to-[#0c0f17]'
+                  : cat.accent === 'blue'
+                  ? 'bg-gradient-to-b from-[#0c1527] to-[#0a0d16]'
+                  : 'bg-gradient-to-b from-[#14121e] to-[#0a0d16]'
+              }`}
+            >
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <span className="font-space text-[10px] font-bold uppercase tracking-widest px-2.5 py-0.5 rounded-full border border-white/10 bg-white/5 text-slate-300">
+                    {cat.badge}
+                  </span>
+                  <Globe className="h-4 w-4 text-slate-500" />
                 </div>
-
-                <div className="space-y-1.5 border-t border-slate-100 pt-3">
-                  {cat.samples.map((sample) => (
-                    <button
-                      key={sample}
-                      type="button"
-                      onClick={() => onSelectQuery(sample)}
-                      className="group flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-xs font-medium text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition"
-                    >
-                      <span>{sample}</span>
-                      <ArrowRight className="h-3.5 w-3.5 text-slate-400 group-hover:text-blue-600 transition" />
-                    </button>
-                  ))}
-                </div>
+                <h3 className="font-anton text-lg tracking-wide text-white uppercase mb-2">
+                  {cat.category}
+                </h3>
+                <p className="font-space text-xs text-slate-400 mb-6 leading-relaxed">
+                  {cat.description}
+                </p>
               </div>
-            );
-          })}
+
+              <div className="space-y-2 border-t border-white/10 pt-4">
+                {cat.samples.map((sample) => (
+                  <button
+                    key={sample}
+                    type="button"
+                    onClick={() => onSelectQuery(sample)}
+                    className="group flex w-full items-center justify-between rounded-xl border border-white/5 bg-white/[0.03] px-3.5 py-2.5 font-space text-xs font-medium text-slate-200 transition-all hover:border-white/20 hover:bg-white/10 hover:text-white"
+                  >
+                    <span>{sample}</span>
+                    <ArrowUpRight className="h-3.5 w-3.5 text-slate-500 group-hover:text-blue-400 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                  </button>
+                ))}
+              </div>
+            </Card3D>
+          ))}
         </div>
       </div>
     </div>

@@ -6,11 +6,16 @@
 import React, { useState, useRef } from 'react';
 import { Navbar } from './components/Navbar';
 import { SearchHero } from './components/SearchHero';
+import { StatsRow } from './components/StatsRow';
+import { SourcesLogoStrip } from './components/SourcesLogoStrip';
+import { HowItWorks } from './components/HowItWorks';
+import { BentoFeatures } from './components/BentoFeatures';
+import { DarkContrastSection } from './components/DarkContrastSection';
 import { LoadingState } from './components/LoadingState';
 import { ErrorState } from './components/ErrorState';
-import { EmptyState } from './components/EmptyState';
-import { ResultView } from './components/ResultView';
+import { ResultsSection } from './components/ResultsSection';
 import { MethodologyModal } from './components/MethodologyModal';
+import { Footer } from './components/Footer';
 import { MarketResearchResult } from './types/market';
 import { executeSearchProduct, ApiError } from './services/api';
 
@@ -21,9 +26,20 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<MarketResearchResult | null>(null);
   const [isMethodologyOpen, setIsMethodologyOpen] = useState<boolean>(false);
-  
-  // Guard against accidental rapid duplicate submissions
+
   const activeSubmissionRef = useRef<string | null>(null);
+  const resultsRef = useRef<HTMLDivElement | null>(null);
+
+  const scrollToSearch = () => {
+    const el = document.getElementById('search-section');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const handleSearch = async (queryText: string) => {
     const trimmed = queryText.trim().replace(/\s+/g, ' ');
@@ -32,7 +48,6 @@ export default function App() {
       return;
     }
 
-    // Prevent duplicate submission of identical query while active
     if (isLoading && activeSubmissionRef.current === trimmed) {
       return;
     }
@@ -44,12 +59,17 @@ export default function App() {
     setError(null);
 
     try {
-      // Dispatches to secure server-side endpoint /api/search
       const data = await executeSearchProduct(trimmed);
       setResult(data);
       setError(null);
+
+      // Smooth scroll to results on mobile/desktop
+      setTimeout(() => {
+        if (resultsRef.current) {
+          resultsRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
     } catch (err: unknown) {
-      // Ignore cancelled requests triggered by new query
       if (err instanceof ApiError && err.statusCode === 0) {
         return;
       }
@@ -69,6 +89,7 @@ export default function App() {
     setError(null);
     setIsLoading(false);
     activeSubmissionRef.current = null;
+    scrollToSearch();
   };
 
   const handleRetry = () => {
@@ -78,16 +99,17 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900 font-sans selection:bg-blue-100 selection:text-blue-900">
-      {/* Top Navigation */}
+    <div className="min-h-screen flex flex-col bg-[#faf8f5] text-slate-900 font-sans selection:bg-orange-200 selection:text-orange-900">
+      {/* SaaS Navigation */}
       <Navbar
         onOpenMethodology={() => setIsMethodologyOpen(true)}
         onResetSearch={handleReset}
+        onScrollToSearch={scrollToSearch}
       />
 
-      {/* Main Content Area */}
+      {/* Main Page Content */}
       <main className="flex-1">
-        {/* Search Hero */}
+        {/* 1. Hero with search bar and drifting floating cards */}
         <SearchHero
           initialQuery={currentQuery}
           isLoading={isLoading}
@@ -95,25 +117,38 @@ export default function App() {
           compact={result !== null || isLoading}
         />
 
-        {/* Dynamic Display State */}
-        {isLoading && <LoadingState query={activeQuery} />}
+        {/* Results / Loading / Error Container */}
+        <div ref={resultsRef}>
+          {isLoading && <LoadingState query={activeQuery} />}
 
-        {!isLoading && error && (
-          <ErrorState
-            message={error}
-            onRetry={handleRetry}
-            onReset={handleReset}
-            onSelectSuggestion={(suggestion) => handleSearch(suggestion)}
-          />
-        )}
+          {!isLoading && error && (
+            <ErrorState
+              message={error}
+              onRetry={handleRetry}
+              onReset={handleReset}
+              onSelectSuggestion={(suggestion) => handleSearch(suggestion)}
+            />
+          )}
 
-        {!isLoading && !error && result && (
-          <ResultView data={result} onReset={handleReset} />
-        )}
+          {!isLoading && !error && result && (
+            <ResultsSection data={result} onReset={handleReset} />
+          )}
+        </div>
 
-        {!isLoading && !error && !result && (
-          <EmptyState onSelectQuery={(suggestion) => handleSearch(suggestion)} />
-        )}
+        {/* 2. Stats Row in Soft Cards with Count-up Animation */}
+        <StatsRow />
+
+        {/* 3. Trusted-by / Sources Logo Strip */}
+        <SourcesLogoStrip />
+
+        {/* 4. How It Works (Search, AI Research, Price Estimate) */}
+        <HowItWorks />
+
+        {/* 5. Features in Bento-Style Layout */}
+        <BentoFeatures />
+
+        {/* 6. One Dark Contrasting Section with Large Number Counter */}
+        <DarkContrastSection onScrollToSearch={scrollToSearch} />
       </main>
 
       {/* Methodology Modal */}
@@ -122,27 +157,11 @@ export default function App() {
         onClose={() => setIsMethodologyOpen(false)}
       />
 
-      {/* Clean Global Footer */}
-      <footer className="border-t border-slate-200 bg-white py-6 text-center text-xs text-slate-500">
-        <div className="mx-auto max-w-6xl px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <span className="font-semibold text-slate-700">MarketSpec Engine</span>
-            <span>&bull;</span>
-            <span>Text-Based Product & Material Price Research</span>
-          </div>
-
-          <div className="flex items-center gap-4 text-slate-500">
-            <button
-              onClick={() => setIsMethodologyOpen(true)}
-              className="hover:text-blue-600 transition"
-            >
-              Methodology
-            </button>
-            <span>&bull;</span>
-            <span>Zero Hallucinated Prices Policy</span>
-          </div>
-        </div>
-      </footer>
+      {/* 7. Footer with Clean SaaS Layout */}
+      <Footer
+        onOpenMethodology={() => setIsMethodologyOpen(true)}
+        onScrollToTop={scrollToTop}
+      />
     </div>
   );
 }

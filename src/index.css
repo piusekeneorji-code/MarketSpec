@@ -1,1 +1,114 @@
 @import "tailwindcss";
+
+@layer base {
+  :root {
+    --font-anton: 'Anton', sans-serif;
+    --font-playfair: 'Playfair Display', Georgia, serif;
+    --font-space: 'Space Mono', monospace;
+  }
+
+  body {
+    background-color: #faf8f5;
+    color: #0f172a;
+    overflow-x: hidden;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+}
+
+.font-anton {
+  font-family: var(--font-anton);
+  letter-spacing: 0.02em;
+}
+
+.font-playfair {
+  font-family: var(--font-playfair);
+}
+
+.font-space {
+  font-family: var(--font-space);
+}
+
+/* Soft Warm Shadows & Card Lifts */
+.shadow-soft {
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05), 0 2px 6px -1px rgba(15, 23, 42, 0.02);
+}
+
+.shadow-soft-lg {
+  box-shadow: 0 12px 32px -4px rgba(15, 23, 42, 0.08), 0 4px 12px -2px rgba(15, 23, 42, 0.03);
+}
+
+.shadow-warm {
+  box-shadow: 0 16px 40px -6px rgba(234, 88, 12, 0.12), 0 4px 12px -2px rgba(234, 88, 12, 0.04);
+}
+
+/* Floating Drift Animations */
+@keyframes drift {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes drift-reverse {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(8px);
+  }
+}
+
+.animate-drift {
+  animation: drift 5s ease-in-out infinite;
+}
+
+.animate-drift-reverse {
+  animation: drift-reverse 6s ease-in-out infinite;
+}
+
+/* Shimmer loading */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 1.8s infinite;
+}
+
+/* Reduced Motion Respect */
+@media (prefers-reduced-motion: reduce) {
+  .animate-drift,
+  .animate-drift-reverse,
+  .animate-shimmer,
+  .animate-pulse,
+  .animate-spin {
+    animation: none !important;
+    transform: none !important;
+  }
+  * {
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Custom subtle scrollbar */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+::-webkit-scrollbar-track {
+  background: #f1ede6;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
